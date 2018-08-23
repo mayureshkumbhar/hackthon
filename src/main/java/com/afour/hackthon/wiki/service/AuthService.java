@@ -1,10 +1,12 @@
 package com.afour.hackthon.wiki.service;
 
+import java.util.Date;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.afour.hackthon.wiki.commons.Constants;
@@ -19,55 +21,80 @@ public class AuthService {
 	private final Pattern a4DomainPattern = Pattern.compile(Constants.AFOUR_DMN_REGEX);
 	
 	@Autowired private IUserProfileRepository userProfileRepository;
+	 
 	
-	public UserProfileVO authenticate() {
+	public UserProfileVO authenticate(Map<String, String> userDetails) {
+	
+		if(!validDomain(userDetails.get("email")))
+			throw new ValidationException("Only AFourTech users allowed");
+		
+		UserProfileModel userProfileModel = userProfileRepository.findByProviderId(userDetails.get("id"));
 
-		//step 1 get user from security context
-		
-		
-		
-		
-		//step 2 check if user already registered or not 
-		
-		
-		
-		
-		UserProfileVO userProfileVO = new UserProfileVO();
+		if (null == userProfileModel) {
+			userProfileModel = new UserProfileModel();
+			userProfileModel.setUsername(extractUserName(userDetails.get("email")));
+			userProfileModel.setEmail(userDetails.get("email"));
+			userProfileModel.setFirstName(userDetails.get("given_name"));
+			userProfileModel.setLastName(userDetails.get("family_name"));
+			userProfileModel.setProviderId(userDetails.get("id"));
+			userProfileModel.setKarma(0);
+			userProfileModel.setComplete(false);
+			userProfileModel.setCreationDate(new Date());
+			userProfileModel = userProfileRepository.save(userProfileModel);
+		}
+		ModelMapper modelMapper = new ModelMapper();
+		UserProfileVO userProfileVO = modelMapper.map(userProfileModel, UserProfileVO.class);
 		return userProfileVO;
 	}
 	
-	private boolean validDomain(String email) {
-		return StringUtils.isNotBlank(email) && a4DomainPattern.matcher(email).matches();
-	}
-	
-	private UserProfileModel getCurrentUser() {
-		
-		//Step 1 get use from security context
-		//SecurityContextHolder.getContext().getAuthentication();
 
-		//step 2 validation for afour users
-		String email = "";
+	
+	/*private UserProfileModel getCurrentUser(Map<String, String> userDetails) {
 		
-		if(!validDomain(email)) {
-			throw new ValidationException("Only AfourTech Users allowed");
-		}
-		
-		//Step 3 Check if registration requied for user  
-		String providerId = "";
-		UserProfileModel userProfileModel = userProfileRepository.findByProviderId(providerId);
-		
-		if(null == userProfileModel) {
+		UserProfileModel userProfileModel = userProfileRepository.findByProviderId(userDetails.get("id"));
+
+		if (null == userProfileModel) {
 			userProfileModel = new UserProfileModel();
-			
-			// read values from Principal and assign to object
-			
-			// save object to mongo collection
+			userProfileModel.setUsername(extractUserName(userDetails.get("email")));
+			userProfileModel.setEmail(userDetails.get("email"));
+			userProfileModel.setFirstName(userDetails.get("given_name"));
+			userProfileModel.setLastName(userDetails.get("family_name"));
+			userProfileModel.setProviderId(userDetails.get("id"));
+			userProfileModel.setKarma(0);
+			userProfileModel.setComplete(false);
+			userProfileModel.setCreationDate(new Date());
+			userProfileModel = userProfileRepository.save(userProfileModel);
 		}
-		
 		return userProfileModel;
+
 	}
 	
-	private String generateToken() {
-		
+	private Map<String, String> extractUser() {
+		// Step 1 get use from security context
+		OAuth2Authentication oAuth2Authentication = (OAuth2Authentication) SecurityContextHolder.getContext()
+				.getAuthentication().getPrincipal();
+
+		if (oAuth2Authentication.isAuthenticated()) {
+			Authentication authentication = oAuth2Authentication.getUserAuthentication();
+			Map<String, String> userDetails = (Map<String, String>) authentication.getDetails();
+			return userDetails;
+		} else {
+			throw new WikiException(401, "User is not authenticated");
+		}
+
+	}
+	*/
+	
+	private String extractUserName(String email) {
+		if(StringUtils.isNotBlank(email)) {
+			int endIndex = email.indexOf("@");
+			return email.substring(0, endIndex);
+		}
+		return email;
+	}
+	
+	private boolean validDomain(String email) {
+		return StringUtils.isNotBlank(email) 
+			&& a4DomainPattern.matcher(email).matches();
 	}
 }
