@@ -3,6 +3,8 @@ package com.afour.hackthon.wiki.commons;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,23 +14,26 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.impl.TextCodec;
 
 @Component
 public class TokenUtils {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(TokenUtils.class); 
+	
 	@Value("${jwt.secret}")
     private String secret;
 	
 	public Map<String, String> parseToken(String token) {
-		try{
+		try {
 			Claims body = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-		
-		Map<String,String> map = new HashMap<>();
-		map.put("username", body.getSubject());
-		map.put("id", String.valueOf(body.get("id")));
-		map.put("email", String.valueOf(body.get("email")));
-		return map;
+
+			Map<String, String> map = new HashMap<>();
+			map.put("username", body.getSubject());
+			map.put("id", String.valueOf(body.get("id")));
+			map.put("email", String.valueOf(body.get("email")));
+			return map;
 		} catch (JwtException jwtex) {
 			throw new WikiException(403, "Error occurred while parsing JWT: " + jwtex.getMessage(), jwtex);
 		}
@@ -45,4 +50,15 @@ public class TokenUtils {
 				.signWith(SignatureAlgorithm.HS512, base64EncodedKey).compact();
 
 	}
+	
+	public boolean validateToken(String token) {
+
+        try {
+            Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+            return true;
+        } catch (SignatureException e) {
+            LOGGER.error("Invalid JWT signature: " + e);
+            throw new WikiException(403, "Error occurred while validating JWT: " + e.getMessage(), e);
+        }
+    } 
 }
