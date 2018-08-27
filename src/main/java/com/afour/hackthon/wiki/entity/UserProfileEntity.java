@@ -1,4 +1,4 @@
-package com.afour.hackthon.wiki.model;
+package com.afour.hackthon.wiki.entity;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Data
 @Document(collection="user_profile")
-public class UserProfileModel implements Serializable {
+public class UserProfileEntity implements Serializable {
 
 	private static final long serialVersionUID = -5948663421684212213L;
 

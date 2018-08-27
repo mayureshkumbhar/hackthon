@@ -1,9 +1,6 @@
 package com.afour.hackthon.wiki.commons;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -15,16 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
+//@Component
 public class JWTFilter extends GenericFilterBean{
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JWTFilter.class);
@@ -54,8 +49,8 @@ public class JWTFilter extends GenericFilterBean{
 					}
 				}*/
 				
-			} catch (ExpiredJwtException eje) {
-				LOGGER.info("Security exception for user {} - {}", eje.getClaims().getSubject(), eje.getMessage());
+			} catch (JwtException eje) {
+				LOGGER.info("Security exception for user- {}", eje.getMessage());
 				((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				LOGGER.debug("Exception " + eje.getMessage(), eje);
 			}

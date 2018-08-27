@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.afour.hackthon.wiki.commons.Constants;
+import com.afour.hackthon.wiki.entity.UserProfileEntity;
 import com.afour.hackthon.wiki.exceptions.ValidationException;
-import com.afour.hackthon.wiki.model.UserProfileModel;
 import com.afour.hackthon.wiki.repository.IUserProfileRepository;
 import com.afour.hackthon.wiki.vo.UserProfileVO;
 
@@ -28,10 +28,10 @@ public class AuthService {
 		if(!validDomain(userDetails.get("email")))
 			throw new ValidationException("Only AFourTech users allowed");
 		
-		UserProfileModel userProfileModel = userProfileRepository.findByProviderId(userDetails.get("id"));
+		UserProfileEntity userProfileModel = userProfileRepository.findByProviderId(userDetails.get("id"));
 
 		if (null == userProfileModel) {
-			userProfileModel = new UserProfileModel();
+			userProfileModel = new UserProfileEntity();
 			userProfileModel.setUsername(extractUserName(userDetails.get("email")));
 			userProfileModel.setEmail(userDetails.get("email"));
 			userProfileModel.setFirstName(userDetails.get("given_name"));
@@ -40,7 +40,7 @@ public class AuthService {
 			userProfileModel.setKarma(0);
 			userProfileModel.setComplete(false);
 			userProfileModel.setCreationDate(new Date());
-			userProfileModel = userProfileRepository.save(userProfileModel);
+			userProfileModel = userProfileRepository.insert(userProfileModel);
 		}
 		ModelMapper modelMapper = new ModelMapper();
 		UserProfileVO userProfileVO = modelMapper.map(userProfileModel, UserProfileVO.class);

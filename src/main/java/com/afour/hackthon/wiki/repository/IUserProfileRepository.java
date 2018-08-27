@@ -2,9 +2,9 @@ package com.afour.hackthon.wiki.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.afour.hackthon.wiki.model.UserProfileModel;
+import com.afour.hackthon.wiki.entity.UserProfileEntity;
 
-public interface IUserProfileRepository extends MongoRepository<UserProfileModel, String> {
+public interface IUserProfileRepository extends MongoRepository<UserProfileEntity, String> {
 
-	UserProfileModel findByProviderId(String providerId);
+	UserProfileEntity findByProviderId(String providerId);
 }

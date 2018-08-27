@@ -1,4 +1,4 @@
-package com.afour.hackthon.wiki.resource;
+package com.afour.hackthon.wiki.controller;
 
 import java.security.Principal;
 import java.util.Map;
