@@ -22,7 +22,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         //.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) //comment to avoid JWT token filter
         .csrf().disable()
         .antMatcher("/**").authorizeRequests()
-		//.anyRequest().authenticated() // comment this line if you dont want google security and userprofile is in Mongo 
+		.anyRequest().authenticated() // comment this line if you dont want google security and userprofile is in Mongo 
 		.and().logout().permitAll();
 	}
 }
