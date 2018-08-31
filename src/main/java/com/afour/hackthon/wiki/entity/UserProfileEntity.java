@@ -24,6 +24,7 @@ public class UserProfileEntity implements Serializable {
 	private String providerId;
 	private boolean isComplete;
 	private String summary;
+	private String picture;
 	private int karma;
 	private Set<String> tags;
 	private Date creationDate;

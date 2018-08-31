@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.afour.hackthon.wiki.service.QuestionService;
@@ -25,9 +26,9 @@ public class QuestionController {
 	private QuestionService questionService; 
 	
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Set<QuestionVO>> getQuestions() {
-		Set<QuestionVO> questionVOs = questionService.getQuestions();
-		return new ResponseEntity<>(null,HttpStatus.OK);
+	public ResponseEntity<Set<QuestionVO>> getQuestions(@RequestParam("user") String userId) {
+		Set<QuestionVO> questionVOs = questionService.getQuestions(userId);
+		return new ResponseEntity<>(questionVOs,HttpStatus.OK);
 	}
 	
 	

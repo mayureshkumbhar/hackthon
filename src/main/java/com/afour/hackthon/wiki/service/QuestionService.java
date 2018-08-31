@@ -2,8 +2,11 @@ package com.afour.hackthon.wiki.service;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.ValidationException;
 
@@ -12,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.afour.hackthon.wiki.entity.QuestionEntity;
@@ -38,9 +42,20 @@ public class QuestionService {
 	@Autowired IQuestionRepository questionRepository;
 	
 	
-	public Set<QuestionVO> getQuestions() {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<QuestionVO> getQuestions(String userId) {
+		LOGGER.debug("getting questions posted by user {}" , userId);
+		
+		List<QuestionEntity> questionEntitySet; 
+		if(StringUtils.isNotBlank(userId)) {
+			questionEntitySet = questionRepository.findByUserId(userId, new Sort(Sort.Direction.DESC, "createdDate"));	
+		}else {
+			questionEntitySet = questionRepository.findAll();
+		}
+		Set<QuestionVO> questionVOs2 = questionEntitySet.stream()
+				 					.map(questionVO -> modelMapper.map(questionVO, QuestionVO.class))
+				 					.collect(Collectors.toSet());
+		LOGGER.debug("Question posted by user {} are {}", userId, questionVOs2);
+		return questionVOs2;
 	}
 	
 	
@@ -66,21 +81,23 @@ public class QuestionService {
 			throw new ValidationException(validationMsg);
 		}
 		
-		Optional<UserProfileEntity> entity = userProfileRepository.findById(questionVO.getCreatedBy().getId());
-		if(!entity.isPresent()) {
+		Optional<UserProfileEntity> userEntity = userProfileRepository.findById(questionVO.getCreatedBy().getId());
+		if(!userEntity.isPresent()) {
 			LOGGER.error("UserProfile for not found for id: " + questionVO.getCreatedBy());
 			throw new NotFoundException("UserProfile for not found");
 		}
 		
-		UserProfileEntity userProfileModel = entity.get();
+		UserProfileEntity userProfileModel = userEntity.get();
 		
-		Set<String> tags  = tagService.getTag(questionVO.getQuestion());
+		Map<String, Object> result = tagService.getTag(questionVO.getQuestion(),true);
 		
 		QuestionEntity questionEntity = new QuestionEntity();
 		questionEntity.setQuestion(questionVO.getQuestion());
+		questionEntity.setDescription(questionVO.getDescription());
 		questionEntity.setCreatedBy(userProfileModel);
 		questionEntity.setCreatedDate(new Date());
-		questionEntity.setTags(tags);
+		questionEntity.setTags((Set<String>) result.get("tags"));
+		questionEntity.setSpam((boolean) result.get("isSpam"));
 		questionEntity = questionRepository.insert(questionEntity);
 		
 		QuestionVO postedQuestionVO = modelMapper.map(questionEntity, QuestionVO.class);
@@ -102,11 +119,12 @@ public class QuestionService {
 		
 		QuestionEntity currQuestionEntity = entity.get();
 		
-		Set<String> tags  = tagService.getTag(questionVO.getQuestion());
+		Map<String, Object> result = tagService.getTag(questionVO.getQuestion(),true);
 		
 		currQuestionEntity.setQuestion(questionVO.getQuestion());
+		currQuestionEntity.setDescription(questionVO.getDescription());
 		currQuestionEntity.setModifiedDate(new Date());
-		currQuestionEntity.setTags(tags);
+		currQuestionEntity.setTags((Set<String>) result.get("tags"));
 		currQuestionEntity.setSpam(false);
 		currQuestionEntity.setSpammedBy(Collections.EMPTY_SET);
 		currQuestionEntity = questionRepository.save(currQuestionEntity);
@@ -116,6 +134,10 @@ public class QuestionService {
 		
 	}
 
-	
+	private Map<String,Object> processQuestionTags(String input){
+		
+		
+		return null;
+	}
 
 }

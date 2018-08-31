@@ -22,6 +22,8 @@ public class UserProfileService {
 	
 	@Autowired private IUserProfileRepository userProfileRepository;
 	
+	private ModelMapper modelMapper = new ModelMapper();
+	
 	private final ModelMapper mapper = new ModelMapper();
 	
 	public UserProfileVO getUserProfile(String userId) {
@@ -55,6 +57,18 @@ public class UserProfileService {
 		UserProfileVO updatedProfileVO = mapper.map(userProfileModel, UserProfileVO.class);
 		LOGGER.debug("Updated profile for id [{}] : [{}]", userId, updatedProfileVO);
 		return updatedProfileVO;
+	}
+
+	public UserProfileVO postUserProfile(UserProfileVO profileVO) {
+		UserProfileEntity userProfileModel = userProfileRepository.findByProviderId(profileVO.getProviderId());
+		if (null == userProfileModel) {
+			userProfileModel = modelMapper.map(profileVO, UserProfileEntity.class);
+			userProfileModel.setKarma(0);
+			userProfileModel.setCreationDate(new Date());
+			userProfileModel = userProfileRepository.insert(userProfileModel);
+		}
+		UserProfileVO userProfileVO = modelMapper.map(userProfileModel, UserProfileVO.class);
+		return userProfileVO;
 	}
 	
 	

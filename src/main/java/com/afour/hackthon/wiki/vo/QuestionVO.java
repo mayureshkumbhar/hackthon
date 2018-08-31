@@ -24,6 +24,7 @@ public class QuestionVO implements Serializable{
 	private static final long serialVersionUID = 4991888108637348762L;
 	private String id;
 	private String question;
+	private String description;
 	//@JsonIgnoreProperties(value= {"firstName","lastName","email","karma","tags","complete","summary"})
 	private UserProfileVO createdBy;
 	private boolean isSpam;

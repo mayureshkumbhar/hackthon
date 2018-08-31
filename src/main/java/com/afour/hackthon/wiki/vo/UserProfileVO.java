@@ -18,6 +18,8 @@ public class UserProfileVO implements Serializable {
 	private String lastName;
 	private String username;
 	private String email;
+	private String providerId;
+	private String picture;
 	private boolean isComplete;
 	private String summary;
 	private int karma;

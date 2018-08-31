@@ -16,6 +16,7 @@ public class QuestionEntity {
 	@Id
 	private String id;
 	private String question;
+	private String description;
 	@DBRef
 	private UserProfileEntity createdBy;
 	private boolean isSpam;

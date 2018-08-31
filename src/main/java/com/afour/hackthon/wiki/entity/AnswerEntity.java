@@ -27,6 +27,6 @@ public class AnswerEntity {
 	private boolean isAccpeted;
 	private Set<String> upBy;
 	private Set<String> downBy;
-	
+	private boolean isSpam;
 	
 }

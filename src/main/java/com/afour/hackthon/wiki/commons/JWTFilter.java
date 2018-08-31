@@ -6,21 +6,18 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
-
-import io.jsonwebtoken.JwtException;
 
 //@Component
 public class JWTFilter extends GenericFilterBean{
+
+	@Override
+	public void doFilter(ServletRequest arg0, ServletResponse arg1, FilterChain arg2)
+			throws IOException, ServletException {
+		// TODO Auto-generated method stub
+		
+	}/*
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JWTFilter.class);
 
@@ -41,13 +38,13 @@ public class JWTFilter extends GenericFilterBean{
 				if ( !StringUtils.hasText(jwt) && tokenUtils.validateToken(jwt)) {
 					((HttpServletResponse) servletResponse).setStatus(HttpServletResponse.SC_FORBIDDEN);
 					
-				}/*else {
+				}else {
 					Map<String, String> map = tokenUtils.parseToken(jwt);
 					if (!map.isEmpty()) {
 						
 						
 					}
-				}*/
+				}
 				
 			} catch (JwtException eje) {
 				LOGGER.info("Security exception for user- {}", eje.getMessage());
@@ -72,4 +69,4 @@ public class JWTFilter extends GenericFilterBean{
         }
         return null;
     }
-}
+*/}
