@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import com.afour.hackthon.wiki.vo.UserProfileVO;
 
 @RestController
 @RequestMapping("/profile")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class UserProfileController {
 
 	@Autowired
@@ -29,7 +31,7 @@ public class UserProfileController {
 		return new ResponseEntity<>(profileVO,HttpStatus.OK);
 	}
 	
-	@PostMapping(value= "/", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<UserProfileVO> postUserProfile(@RequestBody UserProfileVO profileVO) {
 		UserProfileVO newProfileVO = profileService.postUserProfile(profileVO);
 		return new ResponseEntity<>(newProfileVO,HttpStatus.OK);
@@ -37,7 +39,7 @@ public class UserProfileController {
 	
 	
 	
-	@PutMapping(value ="/profile/{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PutMapping(value ="/{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<UserProfileVO> updateUserProfile(@PathVariable("id") String userId, @RequestBody UserProfileVO profileVO) {
 		UserProfileVO updatedProfileVO = profileService.updateUserProfile(userId,profileVO);
 		return new ResponseEntity<>(updatedProfileVO,HttpStatus.OK);

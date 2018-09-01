@@ -26,15 +26,15 @@ public class QuestionController {
 	private QuestionService questionService; 
 	
 	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Set<QuestionVO>> getQuestions(@RequestParam("user") String userId) {
+	public ResponseEntity<Set<QuestionVO>> getQuestions(@RequestParam(value = "user", required = false) String userId) {
 		Set<QuestionVO> questionVOs = questionService.getQuestions(userId);
 		return new ResponseEntity<>(questionVOs,HttpStatus.OK);
 	}
 	
 	
 	@GetMapping(value="{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<QuestionVO> getQuestion(@PathVariable("id") String qstnId) {
-		QuestionVO questionVO = questionService.getQuestion(qstnId);
+	public ResponseEntity<QuestionVO> getQuestion(@PathVariable("id") String qstnId, @RequestParam(value = "userId", required = false) String userId) {
+		QuestionVO questionVO = questionService.getQuestion(qstnId, userId);
 		return new ResponseEntity<>(questionVO,HttpStatus.OK);
 	}
 	
@@ -48,5 +48,11 @@ public class QuestionController {
 	public ResponseEntity<QuestionVO> updateQuestion(@PathVariable("id") String qstnId, @RequestBody QuestionVO questionVO) {
 		QuestionVO updatedQuestionVO = questionService.updateQuestion(qstnId,questionVO);
 		return new ResponseEntity<>(updatedQuestionVO,HttpStatus.OK);
+	}
+	
+	@GetMapping(value="/getAllQuestionsForTag", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Set<QuestionVO>> getAllQuestionsForTag(@RequestParam("tag") String tag) {
+		Set<QuestionVO> questionVO = questionService.getAllQuestionsForTag(tag);
+		return new ResponseEntity<>(questionVO,HttpStatus.OK);
 	}
 }

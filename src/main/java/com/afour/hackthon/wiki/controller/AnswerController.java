@@ -1,6 +1,8 @@
 package com.afour.hackthon.wiki.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.afour.hackthon.wiki.service.AnswerService;
@@ -35,16 +39,30 @@ public class AnswerController {
 		return new ResponseEntity<>(newAnswerVO,HttpStatus.OK);
 	}
 	
-	@PostMapping(value="/{id}", consumes= MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<AnswerVO> postAnswer(@PathVariable("id") String ansId, @RequestBody AnswerVO answerVO){
+	@PutMapping(value="/{id}", consumes= MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<AnswerVO> updateAnswer(@PathVariable("id") String ansId, @RequestBody AnswerVO answerVO){
 		AnswerVO newAnswerVO = answerService.updateAnswer(ansId, answerVO);
 		return new ResponseEntity<>(newAnswerVO,HttpStatus.OK);
 	}
 
-	@GetMapping(value="/{qstnId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<AnswerVO>> getAnswersForQuestion(@PathVariable("qstnId") String qstnId){
+	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<List<AnswerVO>> getAnswersForQuestion(@RequestParam("qstnId") String qstnId){
 		List<AnswerVO> answerVOs = answerService.getAnswersForQuestion(qstnId);
 		return new ResponseEntity<>(answerVOs,HttpStatus.OK);
+	}
+	
+	@PutMapping(value = "/vote", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<AnswerVO> vote(@RequestParam(value = "type" , required = true) String type,
+									@RequestParam(value = "ansId" , required = true) String ansId, 
+									@RequestParam(value = "userId", required = true) String userId){
+		AnswerVO answerVO = answerService.vote(type, ansId, userId);
+		return new ResponseEntity<>(answerVO,HttpStatus.OK);
+	}
+	
+	@PutMapping(value = "/accept", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<AnswerVO> accept(@RequestParam(value = "ansId" , required = true) String ansId){
+		AnswerVO answerVO = answerService.accpet(ansId);
+		return new ResponseEntity<>(answerVO,HttpStatus.OK);
 	}
 	
 }

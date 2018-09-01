@@ -1,7 +1,12 @@
 package com.afour.hackthon.wiki.service;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -65,12 +70,37 @@ public class UserProfileService {
 			userProfileModel = modelMapper.map(profileVO, UserProfileEntity.class);
 			userProfileModel.setKarma(0);
 			userProfileModel.setCreationDate(new Date());
+			userProfileModel.setTags(Collections.EMPTY_SET);
+			userProfileModel.setSummary(null);
 			userProfileModel = userProfileRepository.insert(userProfileModel);
 		}
 		UserProfileVO userProfileVO = modelMapper.map(userProfileModel, UserProfileVO.class);
 		return userProfileVO;
 	}
 	
-	
+	public Set<String> getAllUserByTag(List<String> tags ) {
+		/*Iterator<String> itr = tags.iterator();
+		Set<String> userIds = new HashSet<>();
+		while(itr.hasNext()){
+			UserProfileEntity userProfileModel  = userProfileRepository.findByTags(itr.next());
+			if (null != userProfileModel) {
+				userIds.add(userProfileModel.getId());
+			}
+		}
+		
+		return userIds;*/
+		
+		Iterator<String> itr = tags.iterator();
+		Set<String> userIds = new HashSet<>();
+		while(itr.hasNext()){
+			List<UserProfileEntity> userProfileModel  = userProfileRepository.findByTags(itr.next());
+			if (null != userProfileModel) {
+				for(UserProfileEntity user : userProfileModel)
+					userIds.add(user.getId());
+			}
+		}
+		
+		return userIds;
+	}
 	
 }

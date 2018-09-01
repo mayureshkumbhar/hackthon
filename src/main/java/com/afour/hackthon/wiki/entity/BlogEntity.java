@@ -10,24 +10,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 
 @Data
-@Document(collection="answers")
-public class AnswerEntity {
+@Document(collection="blogs")
+public class BlogEntity {
 
 	@Id
 	private String id;
-	private String answer;
-	private Date createDate;
-	private Date modifiedDate;
-	
+	private String title;
+	private String description;
 	@DBRef
-	private UserProfileEntity createBy;
-	
-	@DBRef
-	private QuestionEntity question;
-	private boolean isAccpeted;
-	private Set<String> upBy;
-	private Set<String> downBy;
+	private UserProfileEntity createdBy;
 	private boolean isSpam;
+	private Date createdDate;
+	private Date modifiedDate;
+	private Set<String> tags;
 	private Set<String> spammedBy;
+	private Set<String> viewedBy;
 	
 }

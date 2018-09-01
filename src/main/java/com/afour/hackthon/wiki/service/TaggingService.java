@@ -35,22 +35,30 @@ public class TaggingService {
 		params.put("input", input);
 		
 		Map<String, List<String>> map  = callTaggingService(params);
-		
+		Map<String, Object> result = new HashMap<>();
 		if(!CollectionUtils.isEmpty(map)) {
-			Map<String, Object> result = new HashMap<>();
 			result.put("isSpam", !map.get("spam").isEmpty());
 			result.put("tags", new HashSet<>(map.get("tags")));
 			return result;
+		}else {
+			result.put("isSpam", false);
+			result.put("tags", Collections.EMPTY_SET);
 		}
-		return Collections.emptyMap();
+		return result;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public Map<String, List<String>> callTaggingService(Map<String, Object> params) {
 		LOGGER.debug("Calling tagging service api: uri [{}] and param {}", tagServiceUrl, params);
 		HttpEntity<Map<String, Object>> request = new HttpEntity<>(params);
-		Map<String, List<String>> response = restTemplate.postForObject(tagServiceUrl, request, Map.class);
-		LOGGER.debug("Response recieved: {}", response);
-		return response;
+		try {
+			Map<String, List<String>> response = restTemplate.postForObject(tagServiceUrl, request, Map.class);
+			LOGGER.debug("Response recieved: {}", response);
+			return response;
+		}catch (Exception e) {
+			LOGGER.error("Error occured while calling Tagging API", e);
+			return Collections.emptyMap();
+		}
+		
 	}
 }

@@ -2,6 +2,8 @@ package com.afour.hackthon.wiki.service;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +19,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import com.afour.hackthon.wiki.commons.Constants;
 import com.afour.hackthon.wiki.entity.QuestionEntity;
 import com.afour.hackthon.wiki.entity.UserProfileEntity;
 import com.afour.hackthon.wiki.exceptions.NotFoundException;
@@ -39,17 +43,22 @@ public class QuestionService {
 	@Autowired
 	private IUserProfileRepository userProfileRepository;
 	
-	@Autowired IQuestionRepository questionRepository;
+	@Autowired 
+	private IQuestionRepository questionRepository;
+	
+	@Autowired
+	private NotificationService notificationService;
 	
 	
 	public Set<QuestionVO> getQuestions(String userId) {
 		LOGGER.debug("getting questions posted by user {}" , userId);
 		
 		List<QuestionEntity> questionEntitySet; 
+		
 		if(StringUtils.isNotBlank(userId)) {
 			questionEntitySet = questionRepository.findByUserId(userId, new Sort(Sort.Direction.DESC, "createdDate"));	
 		}else {
-			questionEntitySet = questionRepository.findAll();
+			questionEntitySet = questionRepository.findAllByNotSpam(new Sort(Sort.Direction.DESC, "createdDate"));
 		}
 		Set<QuestionVO> questionVOs2 = questionEntitySet.stream()
 				 					.map(questionVO -> modelMapper.map(questionVO, QuestionVO.class))
@@ -61,14 +70,26 @@ public class QuestionService {
 	
 	
 	
-	public QuestionVO getQuestion(String qstnId) {
+	public QuestionVO getQuestion(String qstnId, String userId) {
 		Optional<QuestionEntity> entity =  questionRepository.findById(qstnId);
 		if(!entity.isPresent()) {
 			LOGGER.error("Questions not found for id: " + qstnId);
 			throw new NotFoundException("Question not found");
 		}
 		
-		QuestionEntity questionEntity =entity.get();
+		QuestionEntity questionEntity = entity.get();
+		
+		if(StringUtils.isNotBlank(userId)) {
+			Set<String> viewedSet = questionEntity.getViewedBy();
+			if(CollectionUtils.isEmpty(viewedSet)) {
+				viewedSet = new HashSet<>();
+			}
+			viewedSet.add(userId);
+			questionEntity.setViewedBy(viewedSet);
+			questionEntity = questionRepository.save(questionEntity);
+		}
+		
+		
 		QuestionVO questionVO = modelMapper.map(questionEntity, QuestionVO.class);
 		LOGGER.debug("Question for id [{}] : {}" , qstnId, questionVO);
 		return questionVO;
@@ -88,6 +109,8 @@ public class QuestionService {
 		}
 		
 		UserProfileEntity userProfileModel = userEntity.get();
+		userProfileModel.setKarma(userProfileModel.getKarma() + Constants.QSTN_ASKD_POINT);
+		
 		
 		Map<String, Object> result = tagService.getTag(questionVO.getQuestion(),true);
 		
@@ -99,6 +122,8 @@ public class QuestionService {
 		questionEntity.setTags((Set<String>) result.get("tags"));
 		questionEntity.setSpam((boolean) result.get("isSpam"));
 		questionEntity = questionRepository.insert(questionEntity);
+		
+		notificationService.saveNotifications(new LinkedList(questionEntity.getTags()), questionEntity.getId());
 		
 		QuestionVO postedQuestionVO = modelMapper.map(questionEntity, QuestionVO.class);
 		return postedQuestionVO;
@@ -125,19 +150,33 @@ public class QuestionService {
 		currQuestionEntity.setDescription(questionVO.getDescription());
 		currQuestionEntity.setModifiedDate(new Date());
 		currQuestionEntity.setTags((Set<String>) result.get("tags"));
-		currQuestionEntity.setSpam(false);
+		currQuestionEntity.setSpam((boolean) result.get("isSpam"));
 		currQuestionEntity.setSpammedBy(Collections.EMPTY_SET);
 		currQuestionEntity = questionRepository.save(currQuestionEntity);
+		LOGGER.debug("Putting notification for quest {} and tags {}", qstnId,currQuestionEntity.getTags());
+		notificationService.saveNotifications(new LinkedList(currQuestionEntity.getTags()), qstnId);
 		
 		QuestionVO updatedQuestionVO = modelMapper.map(currQuestionEntity, QuestionVO.class);
 		return updatedQuestionVO;
 		
 	}
 
-	private Map<String,Object> processQuestionTags(String input){
+	public Set<String> getTagsSet() {
+
+		List<QuestionEntity> questionEntityTags = questionRepository.findTagsAndExcludeOther();
+		Set<String> allTags = new HashSet<>();
+		for(QuestionEntity questionEntity : questionEntityTags)
+			allTags.addAll(questionEntity.getTags());
 		
-		
-		return null;
+		return allTags;
 	}
 
+	public Set<QuestionVO> getAllQuestionsForTag(String tag) {
+		List<QuestionEntity> allQuestionsForTag = questionRepository.findByTags(tag,new Sort(Sort.Direction.DESC, "createdDate"));
+		Set<QuestionVO> questionVOs2 = allQuestionsForTag.stream()
+				.map(questionVO -> modelMapper.map(questionVO, QuestionVO.class)).collect(Collectors.toSet());
+		LOGGER.debug("Question posted for tag {} are {}", tag, questionVOs2);
+		return questionVOs2;
+	}
+	
 }

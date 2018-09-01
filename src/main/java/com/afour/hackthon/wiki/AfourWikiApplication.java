@@ -20,7 +20,6 @@ public class AfourWikiApplication {
 		return new RestTemplate();
 	}
 	
-
 	@Bean
 	public FilterRegistrationBean<SimpleCORSFilter> loggingFilter() {
 		FilterRegistrationBean<SimpleCORSFilter> registrationBean = new FilterRegistrationBean<>();
